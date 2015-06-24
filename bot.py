@@ -57,11 +57,13 @@ class TelegramBot(object):
         data = dict(offset=max(self._processed_status) + 1) if self._processed_status else None
         return self._send_request('getUpdates', data=data).get('result', [])
 
-    def send_message(self, chat_id, message, in_reply_to=None):
+    def send_message(self, chat_id, message, in_reply_to=None, disable_preview=False):
         data = dict(chat_id=chat_id, text=message)
 
         if in_reply_to:
             data['reply_to_message_id'] = int(in_reply_to)
+
+        data['disable_web_page_preview'] = 'true' if disable_preview else 'false'
 
         return self._send_request('sendMessage', data, is_post=True)
 

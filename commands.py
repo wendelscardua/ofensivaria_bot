@@ -2,6 +2,9 @@ import re
 import random
 import requests
 
+def split(text, splits=0):
+    return re.split('\s|\xa0', text, splits)
+
 class Command(object):
 
     SLASH_COMMAND = None
@@ -89,9 +92,27 @@ class GithubLatest(Command):
 
         for commit in json[0:5]:
             commit = commit['commit']
-            message = commit['message'].split("\n")[0]
             answer.append("%s: %s" % (commit['committer']['name'], commit['message']))
 
         self._bot.send_message(message['chat']['id'], '\n'.join(answer))
 
-COMMANDS = [PowerOff, Ping, Title, EitherOr, Help, GithubLatest]
+class ArchiveUrl(Command):
+
+    SLASH_COMMAND = '/archive'
+
+    def respond(self, message):
+        url = split(message['text'], 1)[-1]
+
+        archive_api = 'http://archive.org/wayback/available'
+        response = requests.get(archive_api, params=dict(url=url))
+
+        json = response.json()
+
+        if json['archived_snapshots']:
+            answer = json['archived_snapshots']['closest']['url']
+        else:
+            answer = 'Click here to archive - https://archive.is/?run=1&url=%s' % url
+
+        self._bot.send_message(message['chat']['id'], answer, None, True)
+
+COMMANDS = [PowerOff, Ping, Title, EitherOr, Help, GithubLatest, ArchiveUrl]
