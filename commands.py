@@ -43,13 +43,13 @@ class Ping(Command):
 class Title(Command):
     def can_respond(self, message):
         return message['text'] == u'/title'
-    
+
     def respond(self, message):
         self._bot.send_message(message['chat']['id'], 'http://imgur.com/a/0OlQR')
 
 class EitherOr(Command):
     REPLY_NEEDED = True
-    REGEX = re.compile("([\s\w]+)\sou\s([\s\w]+)\??", re.UNICODE)
+    REGEX = re.compile("(.*)\sou\s(.*)\??", re.UNICODE)
 
     def can_respond(self, message):
         return True
@@ -61,7 +61,7 @@ class EitherOr(Command):
         if random.randint(1, 100) < 10:
             answer = 'sim'
         else:
-            answer = random.choice(choices)
+            answer = random.choice(choices).strip()
 
         self._bot.send_message(message['chat']['id'], answer, message.get('message_id', None))
 
