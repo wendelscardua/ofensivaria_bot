@@ -70,7 +70,7 @@ class Help(Command):
 
 class TelegramBot(object):
 
-    COMMANDS = [PowerOff, Ping, Title
+    COMMANDS = [PowerOff, Ping, Title,
                 EitherOr, Help]
 
     def __init__(self, token):
@@ -132,10 +132,10 @@ class TelegramBot(object):
             print 'getting updates'
             updates = bot.get_updates()
 
-            print 'got %s' % updates
-
             for update in updates:
+                print
                 print "Processing %s" % update
+                print
                 bot.process_update(update)
 
             print 'waiting %ss' % self._pool_sleep_time
