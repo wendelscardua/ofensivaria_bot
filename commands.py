@@ -52,7 +52,7 @@ class EitherOr(Command):
 
     def respond(self, message):
         text = re.split('\s|\xa0', message['text'], 1)[-1]
-        choices = self.regex.findall(text)[0]
+        choices = self.REGEX.findall(text)[0]
 
         if random.randint(1, 100) < 10:
             answer = 'sim'

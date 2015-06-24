@@ -51,7 +51,7 @@ class TelegramBot(object):
             try:
                 command.process(self, message)
             except Exception:
-                logger.exception('Error processing %s'. command)
+                logger.exception('Error processing %s', command)
 
     def get_updates(self):
         data = dict(offset=max(self._processed_status) + 1) if self._processed_status else None
