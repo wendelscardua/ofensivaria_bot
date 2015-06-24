@@ -53,6 +53,13 @@ class EitherOr(Command):
 
         self._bot.send_message(message['chat']['id'], answer, message.get('message_id', None))
 
+class PowerOff(Command):
+
+    SLASH_COMMAND = '/staph'
+
+    def can_respond(self, message):
+        self._bot.stop()
+
 class Help(Command):
 
     SLASH_COMMAND = '/help'
@@ -63,9 +70,11 @@ class Help(Command):
 
 class TelegramBot(object):
 
-    COMMANDS = [Ping, Title, EitherOr, Help]
+    COMMANDS = [PowerOff, Ping, Title
+                EitherOr, Help]
 
     def __init__(self, token):
+        self.__running = True
         self._pool_sleep_time = 5
         self._redis = redis.Redis()
         self._token = token
@@ -118,7 +127,7 @@ class TelegramBot(object):
         return self._send_request('sendMessage', data, is_post=True)
 
     def start_pool(self):
-        while True:
+        while self.__running:
 
             print 'getting updates'
             updates = bot.get_updates()
@@ -131,6 +140,9 @@ class TelegramBot(object):
 
             print 'waiting %ss' % self._pool_sleep_time
             time.sleep(self._pool_sleep_time)
+
+    def stop(self):
+        self.__running = False
 
 if __name__ == '__main__':
     import sys
