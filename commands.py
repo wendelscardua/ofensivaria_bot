@@ -89,6 +89,7 @@ class GithubLatest(Command):
 
         for commit in json[0:5]:
             commit = commit['commit']
+            message = commit['message'].split("\n")[0]
             answer.append("%s: %s" % (commit['committer']['name'], commit['message']))
 
         self._bot.send_message(message['chat']['id'], '\n'.join(answer))
