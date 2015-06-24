@@ -1,5 +1,6 @@
 import re
 import random
+import requests
 
 class Command(object):
 
@@ -76,4 +77,20 @@ class Help(Command):
         answer = 'Deus ajuda quem cedo madruga'
         self._bot.send_message(message['chat']['id'], answer, message.get('message_id', None))
 
-COMMANDS = [PowerOff, Ping, Title, EitherOr, Help]
+class GithubLatest(Command):
+
+    SLASH_COMMAND = '/commits'
+
+    def respond(self, message):
+        url = 'https://api.github.com/repos/fernandotakai/ofensivaria_bot/commits'
+        response = requests.get(url)
+        json = response.json()
+        answer = []
+
+        for commit in json[0:5]:
+            commit = commit['commit']
+            answer.append("%s: %s" % (commit['committer']['name'], commit['message']))
+
+        self._bot.send_message(message['chat']['id'], '\n'.join(answer))
+
+COMMANDS = [PowerOff, Ping, Title, EitherOr, Help, GithubLatest]
