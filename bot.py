@@ -5,12 +5,17 @@ import requests
 
 class Command(object):
 
+    SLASH_COMMAND = None
+
     def __init__(self, bot, redis):
         self._bot = bot
         self._redis = redis
 
     def can_respond(self, message):
-        return True
+        if self.SLASH_COMMAND:
+            return message['text'].startswith(self.SLASH_COMMAND)
+
+        return False
 
     def process(self, bot, message):
         if self.can_respond(message):
@@ -48,11 +53,20 @@ class EitherOr(Command):
 
         self._bot.send_message(message['chat']['id'], answer, message.get('message_id', None))
 
+class Help(Command):
+
+    SLASH_COMMAND = '/help'
+
+    def respond(self, message):
+        answer = 'Deus ajuda quem cedo madruga'
+        self._bot.send_message(message['chat']['id'], answer, message.get('message_id', None))
+
 class TelegramBot(object):
 
-    COMMANDS = [Ping, Title, EitherOr]
+    COMMANDS = [Ping, Title, EitherOr, Help]
 
     def __init__(self, token):
+        self._pool_sleep_time = 5
         self._redis = redis.Redis()
         self._token = token
         self._url = 'https://api.telegram.org/bot%s' % self._token
@@ -103,21 +117,25 @@ class TelegramBot(object):
 
         return self._send_request('sendMessage', data, is_post=True)
 
+    def start_pool(self):
+        while True:
+
+            print 'getting updates'
+            updates = bot.get_updates()
+
+            print 'got %s' % updates
+
+            for update in updates:
+                print "Processing %s" % update
+                bot.process_update(update)
+
+            print 'waiting %ss' % self._pool_sleep_time
+            time.sleep(self._pool_sleep_time)
+
 if __name__ == '__main__':
     import sys
     import time
 
     bot = TelegramBot(sys.argv[1])
 
-    while True:
-        print 'getting updates'
-        updates = bot.get_updates()
-
-        print 'got %s' % updates
-
-        for update in updates:
-            print "Processing %s" % update
-            bot.process_update(update)
-
-        print 'waiting 5s'
-        time.sleep(5)
+    bot.start_pool()
