@@ -2,6 +2,9 @@ import re
 import redis
 import random
 import requests
+import logging
+
+logger = logging.getLogger()
 
 class Command(object):
 
@@ -87,7 +90,7 @@ class TelegramBot(object):
     def _send_request(self, method, data=None, is_post=False):
         url = "%s/%s" % (self._url, method)
 
-        print 'Sending request to %s using params %s' % (url, data)
+        logger.info('Sending request to %s using params %s', url, data)
 
         if is_post:
             response = requests.post(url, data=data)
@@ -95,6 +98,9 @@ class TelegramBot(object):
             response = requests.get(url, params=data)
 
         return response.json()
+
+    def me(self):
+        return self._send_request('getMe')
 
     def process_update(self, update):
         if update['update_id'] in self._processed_status:
@@ -111,8 +117,8 @@ class TelegramBot(object):
         for command in self._commands:
             try:
                 command.process(self, message)
-            except Exception, e:
-                print 'Error processing %s %s' % (command, e)
+            except Exception:
+                logger.exception('Error processing %s'. command)
 
     def get_updates(self):
         data = dict(offset=max(self._processed_status) + 1) if self._processed_status else None
@@ -129,16 +135,14 @@ class TelegramBot(object):
     def start_pool(self):
         while self.__running:
 
-            print 'getting updates'
+            logger.info('Getting updates')
             updates = bot.get_updates()
 
             for update in updates:
-                print
-                print "Processing %s" % update
-                print
+                logger.info("\nProcessing %s\n", update)
                 bot.process_update(update)
 
-            print 'waiting %ss' % self._pool_sleep_time
+            logger.info('Waiting %ss', self._pool_sleep_time)
             time.sleep(self._pool_sleep_time)
 
     def stop(self):
@@ -147,6 +151,13 @@ class TelegramBot(object):
 if __name__ == '__main__':
     import sys
     import time
+
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+    handler = logging.StreamHandler(stream=sys.stdout)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
     bot = TelegramBot(sys.argv[1])
 
