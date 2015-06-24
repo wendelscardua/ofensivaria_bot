@@ -57,7 +57,7 @@ class PowerOff(Command):
 
     SLASH_COMMAND = '/staph'
 
-    def can_respond(self, message):
+    def respond(self, message):
         self._bot.stop()
 
 class Help(Command):
